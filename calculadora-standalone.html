@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Juros Compostos - Cartagenes</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            color: #111827;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #111827;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .calculator-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            animation: fadeInUp 0.6s ease 0.2s both;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6b7280;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 12px 12px 32px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+            color: #111827;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .time-input-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 44px;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .toggle-btn:active {
+            transform: translateY(0);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .calculate-btn:hover {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-card {
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .result-card.total {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+            border-color: #10b981;
+        }
+
+        .result-card.interest {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+            border-color: #f59e0b;
+        }
+
+        .result-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .result-card.total .result-label {
+            color: #10b981;
+        }
+
+        .result-card.interest .result-label {
+            color: #d97706;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .result-card.total .result-value {
+            color: #047857;
+        }
+
+        .result-card.interest .result-value {
+            color: #92400e;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        canvas {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+
+        .info-section {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .info-section h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #d97706;
+            margin-bottom: 8px;
+        }
+
+        .info-section p {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .back-button:active {
+            transform: translateX(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="logo">
+                    <div class="logo-icon">📈</div>
+                    <div class="logo-text">CARTAGENES</div>
+                </div>
+                <a href="/" class="back-button">← Voltar</a>
+            </div>
+            <h1>Calculadora de Juros Compostos</h1>
+            <p class="subtitle">Descubra o poder do interesse composto em seus investimentos</p>
+        </header>
+
+        <div class="calculator-wrapper">
+            <div class="calculator-grid">
+                <!-- Inputs Column -->
+                <div>
+                    <div class="input-group">
+                        <label>Investimento Inicial</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">R$</span>
+                            <input type="number" id="initialInvestment" value="0" min="0" step="100">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 18px;">
+                        <label>Aporte Mensal</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">R$</span>
+                            <input type="number" id="monthlyContribution" value="0" min="0" step="50">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 18px;">
+                        <label>Taxa Anual (%)</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">%</span>
+                            <input type="number" id="annualRate" value="0" min="0" max="100" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 18px;">
+                        <label>Período</label>
+                        <div class="time-input-group">
+                            <div class="input-wrapper">
+                                <input type="number" id="period" value="0" min="1" step="1">
+                            </div>
+                            <button class="toggle-btn" id="togglePeriod">
+                                <span id="periodLabel">Anos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="calculate-btn" id="calculateBtn">
+                        <span>⚡</span> Calcular
+                    </button>
+                </div>
+
+                <!-- Results Column -->
+                <div>
+                    <div class="results-container">
+                        <div class="result-card total">
+                            <div class="result-label">Total Acumulado</div>
+                            <div class="result-value" id="totalResult">R$ 0,00</div>
+                        </div>
+                        <div class="result-card interest">
+                            <div class="result-label">Ganho em Juros</div>
+                            <div class="result-value" id="interestResult">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>💡 Como Funciona?</h3>
+                        <p>Os juros compostos funcionam de forma exponencial: você ganha juros sobre o capital inicial <strong>e</strong> sobre os juros acumulados. Quanto maior o período, mais poderoso o efeito!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>📊 Detalhes do Cálculo</h3>
+                <p id="calculationDetails" style="display: none;"></p>
+                <p id="noCalcMessage">Clique em "Calcular" para ver os detalhes de seu investimento.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let periodType = 'years';
+
+        const initialInvestmentInput = document.getElementById('initialInvestment');
+        const monthlyContributionInput = document.getElementById('monthlyContribution');
+        const annualRateInput = document.getElementById('annualRate');
+        const periodInput = document.getElementById('period');
+        const togglePeriodBtn = document.getElementById('togglePeriod');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const totalResultEl = document.getElementById('totalResult');
+        const interestResultEl = document.getElementById('interestResult');
+        const chartCanvas = document.getElementById('growthChart');
+        const calculationDetails = document.getElementById('calculationDetails');
+        const noCalcMessage = document.getElementById('noCalcMessage');
+
+        togglePeriodBtn.addEventListener('click', () => {
+            periodType = periodType === 'years' ? 'months' : 'years';
+            document.getElementById('periodLabel').textContent = periodType === 'years' ? 'Anos' : 'Meses';
+            calculate();
+        });
+
+        [initialInvestmentInput, monthlyContributionInput, annualRateInput, periodInput].forEach(input => {
+            input.addEventListener('change', calculate);
+        });
+
+        calculateBtn.addEventListener('click', calculate);
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        function calculate() {
+            const initialInvestment = parseFloat(initialInvestmentInput.value) || 0;
+            const monthlyContribution = parseFloat(monthlyContributionInput.value) || 0;
+            const annualRate = parseFloat(annualRateInput.value) || 0;
+            const period = parseFloat(periodInput.value) || 1;
+
+            const totalMonths = periodType === 'years' ? period * 12 : period;
+            const monthlyRate = Math.pow(1 + annualRate / 100, 1 / 12) - 1;
+
+            let currentBalance = initialInvestment;
+            let totalInvested = initialInvestment;
+            const investedData = [initialInvestment];
+            const interestData = [0];
+            const labels = ['Início'];
+
+            for (let month = 1; month <= totalMonths; month++) {
+                const interest = currentBalance * monthlyRate;
+                currentBalance += interest + monthlyContribution;
+                totalInvested += monthlyContribution;
+
+                if (totalMonths <= 24 || month % Math.ceil(totalMonths / 20) === 0 || month === totalMonths) {
+                    const earned = currentBalance - totalInvested;
+                    investedData.push(totalInvested);
+                    interestData.push(earned);
+                    if (periodType === 'years') {
+                        const years = (month / 12).toFixed(1);
+                        labels.push(`${years}a`);
+                    } else {
+                        labels.push(`Mês ${month}`);
+                    }
+                }
+            }
+
+            const totalInterest = currentBalance - totalInvested;
+
+            totalResultEl.textContent = formatCurrency(currentBalance);
+            interestResultEl.textContent = formatCurrency(totalInterest);
+
+            if (totalMonths > 0) {
+                noCalcMessage.style.display = 'none';
+                calculationDetails.style.display = 'block';
+                calculationDetails.innerHTML = `
+                    <strong>Investimento Inicial:</strong> ${formatCurrency(initialInvestment)} | 
+                    <strong>Aportes Mensais:</strong> ${formatCurrency(monthlyContribution)} | 
+                    <strong>Total Investido:</strong> ${formatCurrency(totalInvested)} | 
+                    <strong>Taxa Anual:</strong> ${annualRate}% | 
+                    <strong>Período:</strong> ${periodType === 'years' ? period + ' ano(s)' : period + ' mês(es)'}
+                `;
+            }
+
+            updateChart(labels, investedData, interestData);
+        }
+
+        function updateChart(labels, investedData, interestData) {
+            const ctx = chartCanvas.getContext('2d');
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const gradientInvested = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientInvested.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+            gradientInvested.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+            const gradientInterest = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientInterest.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+            gradientInterest.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '📊 Total Investido',
+                            data: investedData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: gradientInvested,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#3b82f6',
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
+                            borderWidth: 3,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: '💰 Ganho em Juros',
+                            data: interestData,
+                            borderColor: '#10b981',
+                            backgroundColor: gradientInterest,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
+                            borderWidth: 3,
+                            pointHoverRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 12, weight: '600' },
+                                color: '#6b7280',
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                            padding: 14,
+                            titleFont: { size: 14, weight: '700' },
+                            bodyFont: { size: 12, weight: '600' },
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = formatCurrency(context.parsed.y);
+                                    return ` ${label}: ${value}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11, weight: '600' },
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: { size: 11, weight: '600' },
+                                color: '#9ca3af',
+                                callback: (value) => {
+                                    if (value >= 1000000) {
+                                        return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return 'R$ ' + (value / 1000).toFixed(0) + 'K';
+                                    }
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        calculate();
+    </script>
+</body>
+</html>
