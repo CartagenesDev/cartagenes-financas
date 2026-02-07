@@ -45,24 +45,32 @@ const RankingsLive: React.FC = () => {
 
       for (const symbol of symbols) {
         try {
-          const response = await fetch(`https://brapi.dev/api/quote/${symbol}`);
+          const response = await fetch(`https://brapi.dev/api/quote/${symbol}?fundamental=true`);
+          
+          if (!response.ok) {
+            console.error(`HTTP ${response.status} para ${symbol}`);
+            continue;
+          }
+          
           const data = await response.json();
 
           if (data.results && data.results.length > 0) {
             const stock = data.results[0];
             const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
-            const previousClose = parseFloat(stock.previousClose || stock.regularMarketPreviousClose || close);
+            const previousClose = parseFloat(stock.regularMarketPreviousClose || stock.previousClose || close);
             const change = close - previousClose;
-            const peRatio = parseFloat(stock.priceEarnings || stock.regularMarketPE || 0);
+            const peRatio = parseFloat(stock.priceEarnings || 0);
             const dividendYield = parseFloat(stock.dividendYield || stock.trailingAnnualDividendYield || 0);
             
-            stocksData.push({
-              symbol: stock.symbol,
-              change: change,
-              peRatio: peRatio,
-              dividendYield: dividendYield > 1 ? dividendYield : dividendYield * 100, // Ajustar se já estiver em %
-              lastPrice: close
-            });
+            if (close > 0) {
+              stocksData.push({
+                symbol: stock.symbol || symbol,
+                change: change,
+                peRatio: peRatio,
+                dividendYield: dividendYield > 1 ? dividendYield : dividendYield * 100,
+                lastPrice: close
+              });
+            }
           }
         } catch (err) {
           console.error(`Erro ao buscar ${symbol}:`, err);

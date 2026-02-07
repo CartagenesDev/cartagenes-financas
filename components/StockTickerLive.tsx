@@ -28,39 +28,46 @@ const StockTickerLive: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const fetchPromises = symbols.map(symbol =>
-        fetch(`https://brapi.dev/api/quote/${symbol}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.results && data.results.length > 0) {
-              const stock = data.results[0];
-              const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
-              const previousClose = parseFloat(stock.previousClose || stock.regularMarketPreviousClose || close);
-              const change = close - previousClose;
-              const changePercent = previousClose > 0 ? ((change / previousClose) * 100) : 0;
-              
-              return {
-                symbol: stock.symbol,
-                name: stock.shortName || stock.longName || symbol,
-                close: close,
-                change: change,
-                changePercent: changePercent,
-                volume: parseInt(stock.regularMarketVolume || stock.volume || 0)
-              };
-            }
-            return null;
-          })
-          .catch(err => {
-            console.error(`Erro ao buscar ${symbol}:`, err);
-            return null;
-          })
-      );
+      const fetchPromises = symbols.map(async (symbol) => {
+        try {
+          const response = await fetch(`https://brapi.dev/api/quote/${symbol}?fundamental=false`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          const data = await response.json();
+
+          if (data.results && data.results.length > 0) {
+            const stock = data.results[0];
+            const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
+            const previousClose = parseFloat(stock.regularMarketPreviousClose || stock.previousClose || close);
+            const change = close - previousClose;
+            const changePercent = previousClose > 0 ? ((change / previousClose) * 100) : 0;
+            
+            return {
+              symbol: stock.symbol || symbol,
+              name: stock.shortName || stock.longName || symbol,
+              close: close,
+              change: change,
+              changePercent: changePercent,
+              volume: parseInt(stock.regularMarketVolume || stock.volume || 0)
+            };
+          }
+          return null;
+        } catch (err) {
+          console.error(`Erro ao buscar ${symbol}:`, err);
+          return null;
+        }
+      });
 
       const results = await Promise.all(fetchPromises);
       const validStocks = results.filter(stock => stock !== null) as StockData[];
 
-      setStocks(validStocks);
-      setLastUpdate(new Date());
+      if (validStocks.length > 0) {
+        setStocks(validStocks);
+        setLastUpdate(new Date());
+      }
       setLoading(false);
     } catch (err) {
       console.error('Erro ao buscar dados de ações:', err);
