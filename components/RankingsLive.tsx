@@ -50,11 +50,15 @@ const RankingsLive: React.FC = () => {
 
           if (data.results && data.results.length > 0) {
             const stock = data.results[0];
+            const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
+            const previousClose = parseFloat(stock.previousClose || stock.regularMarketPreviousClose || close);
+            const change = close - previousClose;
+            
             stocksData.push({
               symbol: stock.symbol,
-              change: parseFloat(stock.change || 0),
-              dividendYield: parseFloat(stock.dividendYield || 0),
-              lastPrice: parseFloat(stock.lastPrice || stock.close || 0)
+              change: change,
+              dividendYield: parseFloat(stock.dividendYield || stock.trailingAnnualDividendYield || 0) * 100,
+              lastPrice: close
             });
           }
         } catch (err) {

@@ -34,13 +34,18 @@ const StockTickerLive: React.FC = () => {
           .then(data => {
             if (data.results && data.results.length > 0) {
               const stock = data.results[0];
+              const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
+              const previousClose = parseFloat(stock.previousClose || stock.regularMarketPreviousClose || close);
+              const change = close - previousClose;
+              const changePercent = previousClose > 0 ? ((change / previousClose) * 100) : 0;
+              
               return {
                 symbol: stock.symbol,
-                name: stock.name || symbol,
-                close: parseFloat(stock.close),
-                change: parseFloat(stock.change),
-                changePercent: parseFloat(stock.changePercent),
-                volume: stock.volume || 0
+                name: stock.shortName || stock.longName || symbol,
+                close: close,
+                change: change,
+                changePercent: changePercent,
+                volume: parseInt(stock.regularMarketVolume || stock.volume || 0)
               };
             }
             return null;
