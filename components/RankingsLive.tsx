@@ -56,18 +56,21 @@ const RankingsLive: React.FC = () => {
 
           if (data.results && data.results.length > 0) {
             const stock = data.results[0];
-            const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
-            const previousClose = parseFloat(stock.regularMarketPreviousClose || stock.previousClose || close);
+            const close = Number(stock.regularMarketPrice) || Number(stock.close) || 0;
+            const previousClose = Number(stock.regularMarketPreviousClose) || Number(stock.previousClose) || close;
             const change = close - previousClose;
-            const peRatio = parseFloat(stock.priceEarnings || 0);
-            const dividendYield = parseFloat(stock.dividendYield || stock.trailingAnnualDividendYield || 0);
+            const peRatio = Number(stock.priceEarnings) || 0;
             
-            if (close > 0) {
+            // Dividend yield não está disponível na API Brapi, usar fallback
+            const dividendYield = 0;
+            
+            if (close > 0 && peRatio > 0) {
+              console.log(`${symbol}: PE=${peRatio}`);
               stocksData.push({
                 symbol: stock.symbol || symbol,
                 change: change,
                 peRatio: peRatio,
-                dividendYield: dividendYield > 1 ? dividendYield : dividendYield * 100,
+                dividendYield: dividendYield,
                 lastPrice: close
               });
             }
@@ -115,8 +118,9 @@ const RankingsLive: React.FC = () => {
         { symbol: 'ITUB4', value: '6.2%' }
       ];
 
+      // Como a API não retorna dividendYield, sempre usar dados estáticos para DY
       setRankingPL(sorted_pl.length >= 3 ? sorted_pl : fallbackPL);
-      setRankingDY(sorted_dy.length >= 3 ? sorted_dy : fallbackDY);
+      setRankingDY(fallbackDY);
 
       // Cachear os dados
       const cacheData = {

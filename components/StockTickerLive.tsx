@@ -40,8 +40,8 @@ const StockTickerLive: React.FC = () => {
 
           if (data.results && data.results.length > 0) {
             const stock = data.results[0];
-            const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
-            const previousClose = parseFloat(stock.regularMarketPreviousClose || stock.previousClose || close);
+            const close = Number(stock.regularMarketPrice) || Number(stock.close) || 0;
+            const previousClose = Number(stock.regularMarketPreviousClose) || Number(stock.previousClose) || close;
             const change = close - previousClose;
             const changePercent = previousClose > 0 ? ((change / previousClose) * 100) : 0;
             
