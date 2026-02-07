@@ -53,11 +53,14 @@ const RankingsLive: React.FC = () => {
             const close = parseFloat(stock.regularMarketPrice || stock.close || 0);
             const previousClose = parseFloat(stock.previousClose || stock.regularMarketPreviousClose || close);
             const change = close - previousClose;
+            const peRatio = parseFloat(stock.priceEarnings || stock.regularMarketPE || 0);
+            const dividendYield = parseFloat(stock.dividendYield || stock.trailingAnnualDividendYield || 0);
             
             stocksData.push({
               symbol: stock.symbol,
               change: change,
-              dividendYield: parseFloat(stock.dividendYield || stock.trailingAnnualDividendYield || 0) * 100,
+              peRatio: peRatio,
+              dividendYield: dividendYield > 1 ? dividendYield : dividendYield * 100, // Ajustar se já estiver em %
               lastPrice: close
             });
           }
@@ -66,15 +69,24 @@ const RankingsLive: React.FC = () => {
         }
       }
 
-      // Calcular P/L (simulado como múltiplo de valoração)
-      // Usando a variação como proxy
+      // Ranking de P/L (menores primeiro = melhores)
       const sorted_pl = stocksData
-        .sort((a, b) => a.change - b.change)
+        .filter(s => s.peRatio > 0 && s.peRatio < 100) // Filtrar P/L válidos
+        .sort((a, b) => a.peRatio - b.peRatio)
         .slice(0, 5)
         .map(stock => ({
           symbol: stock.symbol,
-          value: `${(stock.change).toFixed(2)}x`
+          value: `${stock.peRatio.toFixed(1)}x`
         }));
+
+      // Se não tiver dados suficientes de P/L, usar dados estáticos como fallback
+      const fallbackPL: RankingItem[] = [
+        { symbol: 'BBAS3', value: '4.2x' },
+        { symbol: 'PETR4', value: '4.8x' },
+        { symbol: 'VALE3', value: '5.5x' },
+        { symbol: 'CSNA3', value: '6.1x' },
+        { symbol: 'PRIO3', value: '7.2x' }
+      ];
 
       // Ranking de Dividend Yield
       const sorted_dy = stocksData
@@ -83,29 +95,25 @@ const RankingsLive: React.FC = () => {
         .slice(0, 5)
         .map(stock => ({
           symbol: stock.symbol,
-          value: `${(stock.dividendYield).toFixed(1)}%`
+          value: `${stock.dividendYield.toFixed(1)}%`
         }));
 
       // Se não tiver dados suficientes de DY, usar dados estáticos como fallback
-      if (sorted_dy.length < 5) {
-        const fallbackDY: RankingItem[] = [
-          { symbol: 'PETR4', value: '14.5%' },
-          { symbol: 'BBAS3', value: '10.2%' },
-          { symbol: 'VALE3', value: '8.8%' },
-          { symbol: 'CSNA3', value: '7.5%' },
-          { symbol: 'ITUB4', value: '6.2%' }
-        ];
-        setRankingDY(fallbackDY);
-      } else {
-        setRankingDY(sorted_dy);
-      }
+      const fallbackDY: RankingItem[] = [
+        { symbol: 'PETR4', value: '14.5%' },
+        { symbol: 'BBAS3', value: '10.2%' },
+        { symbol: 'VALE3', value: '8.8%' },
+        { symbol: 'CSNA3', value: '7.5%' },
+        { symbol: 'ITUB4', value: '6.2%' }
+      ];
 
-      setRankingPL(sorted_pl.length > 0 ? sorted_pl : []);
+      setRankingPL(sorted_pl.length >= 3 ? sorted_pl : fallbackPL);
+      setRankingDY(sorted_dy.length >= 3 ? sorted_dy : fallbackDY);
 
       // Cachear os dados
       const cacheData = {
-        pl: sorted_pl.length > 0 ? sorted_pl : rankingPL,
-        dy: sorted_dy.length > 5 ? sorted_dy : rankingDY
+        pl: sorted_pl.length >= 3 ? sorted_pl : fallbackPL,
+        dy: sorted_dy.length >= 3 ? sorted_dy : fallbackDY
       };
       localStorage.setItem('rankingsData', JSON.stringify(cacheData));
       localStorage.setItem('rankingsTime', now.toString());
