@@ -174,9 +174,9 @@ const HomePage: React.FC = () => {
                 <p className="text-gray-600 font-medium mb-6 leading-relaxed max-w-lg">
                   Alta performance exige um corpo saudável. Descubra os suplementos de elite que estão transformando a rotina de grandes executivos.
                 </p>
-                <Link to="/presell-buygoods" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center md:justify-start gap-3 w-full md:w-auto mx-auto md:mx-0 group hover:-translate-y-1">
+                <a href="/sugar-report.html" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center md:justify-start gap-3 w-full md:w-auto mx-auto md:mx-0 group hover:-translate-y-1">
                   Ver Oportunidade <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </a>
               </div>
             </div>
 
