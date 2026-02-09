@@ -292,7 +292,7 @@ const CompoundInterestCalc: React.FC = () => {
           )}
           {result && (
             <p style={{ fontSize: '10px', color: '#666', marginTop: '6px' }}>
-              * Resultado baseado em simulação matemática. Não garante rentabilidade futura.
+              Simulação matemática. Não representa garantia de retorno.
             </p>
           )}
         </div>

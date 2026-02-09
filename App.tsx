@@ -249,12 +249,12 @@ const HomePage: React.FC = () => {
         <div className="max-w-[1000px] mx-auto">
           <p className="font-bold uppercase">© {new Date().getFullYear()} CARTAGENES JR. - PORTAL DE NOTÍCIAS E EDUCAÇÃO</p>
           <p className="my-4 uppercase">
-            <Link to="/sobre" className="text-[#888] no-underline">SOBRE NÓS</Link> |{' '}
+            <a href="/sobre.html" className="text-[#888] no-underline">SOBRE NÓS</a> |{' '}
             <Link to="/legal#privacy" className="text-[#888] no-underline">PRIVACIDADE</Link> |{' '}
             <Link to="/legal#terms" className="text-[#888] no-underline">TERMOS DE USO</Link>
           </p>
           <p className="text-[#555] leading-relaxed uppercase">
-            DISCLAIMER: ESTE PORTAL É ESTRITAMENTE INFORMATIVO. NÃO REALIZAMOS RECOMENDAÇÕES DE INVESTIMENTO E NÃO SOMOS CONSULTORIA CERTIFICADA.
+            O SITE CARTAGENES JR. É UM PORTAL EDUCATIVO E INFORMATIVO. NÃO REALIZAMOS RECOMENDAÇÕES DE INVESTIMENTO.
           </p>
         </div>
       </footer>
