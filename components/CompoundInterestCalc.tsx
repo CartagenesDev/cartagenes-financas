@@ -265,6 +265,13 @@ const CompoundInterestCalc: React.FC = () => {
               <Trash2 size={18} />
             </button>
           </div>
+          
+          {/* Disclaimer CVM */}
+          <div className="disclaimer-text bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mt-4">
+            <p className="text-xs text-amber-900 leading-relaxed">
+              ⚠️ <strong>Aviso:</strong> Simulação matemática para fins educativos. Não representa garantia de rentabilidade futura. Os resultados são estimativas baseadas nos parâmetros informados e não consideram taxas, impostos ou variações de mercado.
+            </p>
+          </div>
         </div>
 
         {/* Resultados e Gráfico */}

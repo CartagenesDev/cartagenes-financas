@@ -31,6 +31,7 @@ import InvestimentosPage from './pages/InvestimentosPage';
 import PresellBuyGoodsPage from './pages/PresellBuyGoodsPage';
 import LoginPage from './pages/LoginPage';
 import NoticiaDetalhePage from './pages/NoticiaDetalhePage';
+import SobrePage from './pages/SobrePage';
 
 const HomePage: React.FC = () => {
   const [aiTip, setAiTip] = useState<string>("Carregando insight do mercado...");
@@ -55,6 +56,11 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Compliance Disclaimer Banner */}
+      <div className="bg-gray-900 text-gray-200 text-xs py-2 px-4 text-center font-medium">
+        Portal de Notícias e Educação Financeira. Não realizamos recomendações de investimento.
+      </div>
+      
       {/* Header Section */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,6 +77,7 @@ const HomePage: React.FC = () => {
             <nav className="hidden lg:flex items-center gap-8 font-semibold text-sm text-gray-600 pl-16">
               <Link to="/noticias" className="hover:text-amber-500 transition-colors">Notícias</Link>
               <Link to="/calculadoras" className="hover:text-amber-500 transition-colors">Calculadoras</Link>
+              <Link to="/sobre" className="hover:text-amber-500 transition-colors">Sobre</Link>
               <Link to="/contato" className="hover:text-amber-500 transition-colors">Contato</Link>
             </nav>
 
@@ -79,7 +86,7 @@ const HomePage: React.FC = () => {
               <Search size={18} className="text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Pesquise notícias, recomendações e..." 
+                placeholder="Pesquise notícias e conteúdo educativo..." 
                 className="bg-transparent border-none focus:ring-0 text-sm w-full ml-2 outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -149,6 +156,7 @@ const HomePage: React.FC = () => {
             <nav className="flex flex-col gap-4 font-semibold text-gray-600">
               <Link to="/noticias" className="hover:text-amber-500 p-2 rounded-lg transition-colors">Notícias</Link>
               <Link to="/calculadoras" className="hover:text-amber-500 p-2 rounded-lg transition-colors">Calculadoras</Link>
+              <Link to="/sobre" className="hover:text-amber-500 p-2 rounded-lg transition-colors">Sobre</Link>
               <Link to="/contato" className="hover:text-amber-500 p-2 rounded-lg transition-colors">Contato</Link>
             </nav>
           </div>
@@ -205,14 +213,19 @@ const HomePage: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {NEWS_DATABASE.filter(n => n.isTrending).slice(0, 4).map((article) => (
-                  <Link key={article.id} to={`/noticias/${article.slug}`} className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                  <Link key={article.id} to={`/noticias/${article.slug}`} className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col">
                     <div className="h-32 overflow-hidden">
                       <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                     </div>
-                    <div className="p-3">
+                    <div className="p-3 flex-grow flex flex-col">
                       <p className="text-xs font-bold text-amber-500 mb-1 uppercase">{article.category}</p>
-                      <h3 className="text-xs font-bold leading-tight line-clamp-2 group-hover:text-amber-500 transition-colors">{article.title}</h3>
+                      <h3 className="text-xs font-bold leading-tight line-clamp-2 group-hover:text-amber-500 transition-colors flex-grow">{article.title}</h3>
                       <p className="text-[10px] text-gray-500 mt-2">{article.date}</p>
+                    </div>
+                    <div className="bg-gray-50 px-3 py-2 border-t border-gray-100">
+                      <p className="text-[9px] text-gray-500 leading-tight">
+                        Conteúdo informativo. Consulte um profissional certificado antes de investir.
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -243,25 +256,6 @@ const HomePage: React.FC = () => {
           {/* Sidebar */}
           <aside className="lg:col-span-4 space-y-8">
             
-            {/* BuyGoods/Affiliate Premium Banner (Sidebar Top) - REMOVIDO para evitar duplicidade com o Main Feed */}
-
-            {/* Card de Consultoria */}
-            <div className="bg-emerald-900 rounded-2xl p-6 text-white text-center shadow-xl shadow-emerald-900/10">
-                <div className="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="text-emerald-400" size={24} />
-                </div>
-                <h3 className="text-xl font-bold mb-3">Consultoria Financeira Personalizada</h3>
-                <p className="text-emerald-100 text-sm mb-6 leading-relaxed">
-                    Não sabe onde investir para atingir esses resultados? Conte com a gestão de patrimônio da Cartagenes para multiplicar seus rendimentos com inteligência.
-                </p>
-                <Link to="/contato" className="w-full bg-white text-emerald-900 font-bold py-3.5 rounded-xl hover:bg-emerald-50 transition-colors shadow-lg shadow-black/20 transform hover:-translate-y-1 hover:shadow-xl inline-block text-center">
-                    Agendar uma Consulta ›
-                </Link>
-                <p className="text-xs text-emerald-400/60 mt-4 border-t border-emerald-800/50 pt-4">
-                    Atendimento exclusivo para investidores qualificados.
-                </p>
-            </div>
-
             {/* Rankings Section - Dinâmico com dados reais */}
             <RankingsLive />
 
@@ -303,7 +297,7 @@ const HomePage: React.FC = () => {
                 <span className="text-xl font-black tracking-tight">CARTAGENES</span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                Sua fonte independente de informações sobre finanças, investimentos de longo prazo e bem-estar integral.
+                Portal independente de notícias e educação financeira. Conteúdo informativo sobre finanças e bem-estar.
               </p>
             </div>
 
@@ -317,6 +311,7 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Sobre</h4>
               <ul className="space-y-4 text-sm text-gray-400 font-medium">
+                <li><Link to="/sobre" className="hover:text-white transition-colors">Quem Somos</Link></li>
                 <li><Link to="/contato" className="hover:text-white transition-colors">Contato</Link></li>
               </ul>
             </div>
@@ -332,12 +327,22 @@ const HomePage: React.FC = () => {
 
           </div>
 
-          <div className="pt-12 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          {/* Aviso Legal CVM */}
+          <div className="pt-8 border-t border-gray-800">
+            <div className="bg-gray-800 border border-amber-500/30 rounded-xl p-6 mb-8">
+              <p className="text-amber-400 font-black uppercase text-xs tracking-widest mb-3">⚠️ AVISO LEGAL</p>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                O site <strong>Cartagenes</strong> é um portal de conteúdo educativo e informativo. <strong>Não somos corretora, consultores certificados pela CVM ou gestores de patrimônio.</strong> Todo conteúdo publicado tem finalidade exclusivamente educacional e jornalística. <strong>Investimentos envolvem riscos.</strong> Consulte sempre um profissional certificado antes de tomar decisões financeiras.
+              </p>
+            </div>
+          </div>
+          
+          <div className="pt-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
               &copy; {new Date().getFullYear()} Cartagenes - Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-3 text-gray-500">
-              <span className="text-[10px] font-black uppercase tracking-widest">Powered by Compound Interest</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Portal de Educação Financeira</span>
               <Calculator size={14} className="text-amber-500" />
             </div>
           </div>
@@ -355,6 +360,7 @@ const App: React.FC = () => {
       <Route path="/contato" element={<ContatoPage />} />
       <Route path="/calculadoras" element={<CalculadorasPage />} />
       <Route path="/legal" element={<LegalPage />} />
+      <Route path="/sobre" element={<SobrePage />} />
       <Route path="/perfil" element={<PerfilPage />} />
       <Route path="/investimentos" element={<InvestimentosPage />} />
       <Route path="/presell-buygoods" element={<PresellBuyGoodsPage />} />

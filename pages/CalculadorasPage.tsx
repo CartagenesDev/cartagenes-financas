@@ -206,27 +206,8 @@ const CalculadorasPage: React.FC = () => {
             {/* Sidebar (Direita) */}
             <div className="lg:col-span-1 space-y-6">
                 
-                {/* Card de Consultoria (Sticky) */}
-                <div className="bg-emerald-900 rounded-2xl p-6 text-white text-center shadow-xl shadow-emerald-900/10 sticky top-24">
-                    <div className="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <TrendingUp className="text-emerald-400" size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">Consultoria Financeira Personalizada</h3>
-                    <p className="text-emerald-100 text-sm mb-6 leading-relaxed">
-                        Não sabe onde investir para atingir esses resultados? Conte com a gestão de patrimônio da Cartagenes para multiplicar seus rendimentos com inteligência.
-                    </p>
-                    <button className="w-full bg-white text-emerald-900 font-bold py-3.5 rounded-xl hover:bg-emerald-50 transition-colors shadow-lg shadow-black/20 transform hover:-translate-y-1 transition-transform">
-                        Agendar uma Consulta ›
-                    </button>
-                    <p className="text-xs text-emerald-400/60 mt-4 border-t border-emerald-800/50 pt-4">
-                        Atendimento exclusivo para investidores qualificados.
-                    </p>
-                </div>
-
-                {/* Card Secundário (Ex: Newsletter ou Afiliado) */}
-                <div className="bg-gray-100 rounded-2xl p-6 border border-gray-200">
-                     <h4 className="font-bold text-gray-900 mb-2">Receba novidades</h4>
-                     <p className="text-gray-500 text-xs mb-4">As melhores oportunidades de investimento direto no seu e-mail.</p>
+                {/* Card Secundário: Newsletter */}
+                <div className="bg-gray-100 rounded-2xl p-6 border border-gray-200 sticky top-24">\n                     <h4 className="font-bold text-gray-900 mb-2">Receba novidades</h4>\n                     <p className="text-gray-500 text-xs mb-4">Conte\u00fado educativo e an\u00e1lises de mercado direto no seu e-mail.</p>
                      <form onSubmit={handleNewsletterSubmit} className="space-y-2">
                         <input
                           type="email"
