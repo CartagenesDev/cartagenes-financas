@@ -1,26 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  User, 
-  LogOut, 
-  LayoutGrid, 
-  ChevronRight, 
-  Leaf, 
-  TrendingUp, 
+import {
+  Search,
+  User,
+  LogOut,
+  LayoutGrid,
+  ChevronRight,
+  Leaf,
+  TrendingUp,
   Menu,
   X,
   Sparkles,
   ArrowRight,
   Calculator
 } from 'lucide-react';
-import StockTicker from './components/StockTicker';
 import StockTickerLive from './components/StockTickerLive';
 import RankingsLive from './components/RankingsLive';
 import Carousel from './components/Carousel';
-import CompoundInterestCalc from './components/CompoundInterestCalc';
-import { RANKING_PL, RANKING_DY, NEWS_DATABASE } from './constants';
+import { NEWS_DATABASE } from './constants';
 import { getAITip } from './geminiService';
 import NoticiasPage from './pages/NoticiasPage';
 import ContatoPage from './pages/ContatoPage';
@@ -34,7 +31,7 @@ import NoticiaDetalhePage from './pages/NoticiaDetalhePage';
 import SobrePage from './pages/SobrePage';
 
 const HomePage: React.FC = () => {
-  const [aiTip, setAiTip] = useState<string>("Carregando insight do mercado...");
+  const [aiTip, setAiTip] = useState<string>('Carregando insight do mercado...');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
@@ -56,16 +53,13 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Compliance Disclaimer Banner */}
       <div className="bg-gray-900 text-gray-200 text-xs py-2 px-4 text-center font-medium">
-        Portal de Notícias e Educação Financeira. Não realizamos recomendações de investimento.
+        Portal de Notícias e Educação Financeira. Não realizamos recomendações.
       </div>
-      
-      {/* Header Section */}
+
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-20">
-            {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group cursor-pointer mr-auto hover:opacity-80 transition-opacity">
               <div className="bg-emerald-500 p-2 rounded-lg group-hover:bg-amber-500 transition-colors">
                 <TrendingUp className="text-white" size={24} />
@@ -73,7 +67,6 @@ const HomePage: React.FC = () => {
               <span className="text-2xl font-black tracking-tight text-gray-900">CARTAGENES</span>
             </Link>
 
-            {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8 font-semibold text-sm text-gray-600 pl-16">
               <Link to="/noticias" className="hover:text-amber-500 transition-colors">Notícias</Link>
               <Link to="/calculadoras" className="hover:text-amber-500 transition-colors">Calculadoras</Link>
@@ -81,12 +74,11 @@ const HomePage: React.FC = () => {
               <Link to="/contato" className="hover:text-amber-500 transition-colors">Contato</Link>
             </nav>
 
-            {/* Search Bar */}
             <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 w-full max-w-md mx-8 group border border-transparent focus-within:border-amber-200 focus-within:bg-white transition-all">
               <Search size={18} className="text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Pesquise notícias e conteúdo educativo..." 
+              <input
+                type="text"
+                placeholder="Pesquise notícias e conteúdo educativo..."
                 className="bg-transparent border-none focus:ring-0 text-sm w-full ml-2 outline-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -94,7 +86,6 @@ const HomePage: React.FC = () => {
               />
             </div>
 
-            {/* User Area */}
             <div className="hidden lg:flex items-center gap-3 border-l border-gray-200 pl-8">
               {isLoggedIn ? (
                 <div className="relative group">
@@ -107,8 +98,7 @@ const HomePage: React.FC = () => {
                       <User size={18} className="text-white" />
                     </div>
                   </button>
-                  
-                  {/* Dropdown Menu (aparece no hover) */}
+
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="p-4 border-b border-gray-100">
                       <p className="text-sm font-bold text-gray-900">Caldino Araújo Cartagenes Junior</p>
@@ -140,8 +130,7 @@ const HomePage: React.FC = () => {
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <button 
+            <button
               className="lg:hidden p-2 text-gray-600"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -150,7 +139,6 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-100 p-4 space-y-4 shadow-xl">
             <nav className="flex flex-col gap-4 font-semibold text-gray-600">
@@ -163,47 +151,35 @@ const HomePage: React.FC = () => {
         )}
       </header>
 
-      {/* Stock Ticker Live - Com dados em tempo real */}
       <StockTickerLive />
 
-      {/* Main Content Area */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Feed */}
           <div className="lg:col-span-8 space-y-8">
-            {/* Featured Carousel */}
             <Carousel />
 
-            {/* BuyGoods/Affiliate Premium Banner - High Ticket Placement */}
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-               {/* Decorative background elements */}
-               <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl"></div>
-               
-               <div className="relative z-10 flex-shrink-0">
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-100 group-hover:scale-105 transition-transform duration-500">
-                    <Leaf size={48} className="text-emerald-500" />
-                  </div>
-               </div>
-               
-               <div className="relative z-10 text-center md:text-left flex-grow">
-                  <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-                    <Sparkles size={10} className="text-emerald-500" />
-                    Oferta Exclusiva para Investidores
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
-                    Potencialize sua Saúde e Foco
-                  </h3>
-                  <p className="text-gray-600 font-medium mb-6 leading-relaxed max-w-lg">
-                    Alta performance exige um corpo saudável. Descubra os suplementos de elite que estão transformando a rotina de grandes executivos.
-                  </p>
-                  <Link to="/presell-buygoods" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center md:justify-start gap-3 w-full md:w-auto mx-auto md:mx-0 group hover:-translate-y-1">
-                    Ver Oportunidade <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
-               </div>
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl"></div>
+              <div className="relative z-10 flex-shrink-0">
+                <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-100 group-hover:scale-105 transition-transform duration-500">
+                  <Leaf size={48} className="text-emerald-500" />
+                </div>
+              </div>
+              <div className="relative z-10 text-center md:text-left flex-grow">
+                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+                  <Sparkles size={10} className="text-emerald-500" />
+                  Oferta Exclusiva para Investidores
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">Potencialize sua Saúde e Foco</h3>
+                <p className="text-gray-600 font-medium mb-6 leading-relaxed max-w-lg">
+                  Alta performance exige um corpo saudável. Descubra os suplementos de elite que estão transformando a rotina de grandes executivos.
+                </p>
+                <Link to="/presell-buygoods" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center md:justify-start gap-3 w-full md:w-auto mx-auto md:mx-0 group hover:-translate-y-1">
+                  Ver Oportunidade <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </div>
 
-            {/* Preview: 4 Trending News Cards */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-black text-gray-900">Em Destaque</h2>
@@ -232,7 +208,6 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* AI Tip Bar */}
             <div className="bg-black text-white p-6 rounded-2xl flex items-center gap-4 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Sparkles size={120} />
@@ -242,24 +217,13 @@ const HomePage: React.FC = () => {
               </div>
               <div>
                 <span className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1 block">Dica do Dia (Powered by IA)</span>
-                <p className="text-lg md:text-xl font-medium leading-tight">
-                  "{aiTip}"
-                </p>
+                <p className="text-lg md:text-xl font-medium leading-tight">"{aiTip}"</p>
               </div>
             </div>
-
-            {/* Affiliate Health Block */}
-            
-            {/* Affiliate Health Block - REMOVIDO (Movido para Featured Health Offer no Main Feed) */}
           </div>
 
-          {/* Sidebar */}
           <aside className="lg:col-span-4 space-y-8">
-            
-            {/* Rankings Section - Dinâmico com dados reais */}
             <RankingsLive />
-
-            {/* Calculator Promo Block */}
             <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl text-white relative overflow-hidden shadow-xl group cursor-pointer">
               <div className="relative z-10">
                 <div className="bg-amber-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm">
@@ -277,75 +241,21 @@ const HomePage: React.FC = () => {
                 <Calculator size={300} />
               </div>
             </div>
-
-            {/* Affiliate Health Block - REMOVIDO (Movido para Featured Health Offer no Main Feed) */}
-
           </aside>
         </div>
       </main>
 
-      {/* Footer Section */}
-      <footer className="bg-black text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            
-            <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-emerald-500 p-1.5 rounded-lg">
-                  <TrendingUp className="text-white" size={20} />
-                </div>
-                <span className="text-xl font-black tracking-tight">CARTAGENES</span>
-              </div>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                Portal independente de notícias e educação financeira. Conteúdo informativo sobre finanças e bem-estar.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Recursos</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/calculadoras" className="hover:text-white transition-colors">Calculadoras e Simuladores</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Sobre</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/sobre" className="hover:text-white transition-colors">Quem Somos</Link></li>
-                <li><Link to="/contato" className="hover:text-white transition-colors">Contato</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Jurídico</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/legal#privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/legal#terms" className="hover:text-white transition-colors">Terms of Use</Link></li>
-                <li><Link to="/legal#affiliate" className="hover:text-white transition-colors">Affiliate Disclosure</Link></li>
-              </ul>
-            </div>
-
-          </div>
-
-          {/* Aviso Legal CVM */}
-          <div className="pt-8 border-t border-gray-800">
-            <div className="bg-gray-800 border border-amber-500/30 rounded-xl p-6 mb-8">
-              <p className="text-amber-400 font-black uppercase text-xs tracking-widest mb-3">⚠️ AVISO LEGAL</p>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                O site <strong>Cartagenes</strong> é um portal de conteúdo educativo e informativo. <strong>Não somos corretora, consultores certificados pela CVM ou gestores de patrimônio.</strong> Todo conteúdo publicado tem finalidade exclusivamente educacional e jornalística. <strong>Investimentos envolvem riscos.</strong> Consulte sempre um profissional certificado antes de tomar decisões financeiras.
-              </p>
-            </div>
-          </div>
-          
-          <div className="pt-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} Cartagenes - Todos os direitos reservados.
-            </p>
-            <div className="flex items-center gap-3 text-gray-500">
-              <span className="text-[10px] font-black uppercase tracking-widest">Portal de Educação Financeira</span>
-              <Calculator size={14} className="text-amber-500" />
-            </div>
-          </div>
+      <footer className="bg-[#111] text-[#888] py-10 px-5 text-center text-[12px] border-t border-[#333]">
+        <div className="max-w-[1000px] mx-auto">
+          <p className="font-bold uppercase">© {new Date().getFullYear()} CARTAGENES JR. - PORTAL DE NOTÍCIAS E EDUCAÇÃO</p>
+          <p className="my-4 uppercase">
+            <Link to="/sobre" className="text-[#888] no-underline">SOBRE NÓS</Link> |{' '}
+            <Link to="/legal#privacy" className="text-[#888] no-underline">PRIVACIDADE</Link> |{' '}
+            <Link to="/legal#terms" className="text-[#888] no-underline">TERMOS DE USO</Link>
+          </p>
+          <p className="text-[#555] leading-relaxed uppercase">
+            DISCLAIMER: ESTE PORTAL É ESTRITAMENTE INFORMATIVO. NÃO REALIZAMOS RECOMENDAÇÕES DE INVESTIMENTO E NÃO SOMOS CONSULTORIA CERTIFICADA.
+          </p>
         </div>
       </footer>
     </div>

@@ -214,56 +214,17 @@ const LegalPage: React.FC = () => {
       </main>
 
       {/* Footer Standard */}
-      <footer className="bg-black text-white py-16 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            
-            <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="bg-emerald-500 p-1.5 rounded-lg">
-                  <TrendingUp className="text-white" size={20} />
-                </div>
-                <span className="text-xl font-black tracking-tight">CARTAGENES</span>
-              </div>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                Sua fonte independente de informações sobre finanças, investimentos de longo prazo e bem-estar integral.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Recursos</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/calculadoras" className="hover:text-white transition-colors">Calculadoras e Simuladores</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Sobre</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/contato" className="hover:text-white transition-colors">Contato</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-amber-500 font-black uppercase text-xs tracking-widest mb-6">Jurídico</h4>
-              <ul className="space-y-4 text-sm text-gray-400 font-medium">
-                <li><Link to="/legal#privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/legal#terms" className="hover:text-white transition-colors">Terms of Use</Link></li>
-                <li><Link to="/legal#affiliate" className="hover:text-white transition-colors">Affiliate Disclosure</Link></li>
-              </ul>
-            </div>
-
-          </div>
-
-          <div className="pt-12 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} Cartagenes - Todos os direitos reservados.
-            </p>
-            <div className="flex items-center gap-3 text-gray-500">
-              <span className="text-[10px] font-black uppercase tracking-widest">Powered by Compound Interest</span>
-              <Calculator size={14} className="text-amber-500" />
-            </div>
-          </div>
+      <footer className="bg-[#111] text-[#888] py-10 px-5 text-center text-[12px] border-t border-[#333]">
+        <div className="max-w-[1000px] mx-auto">
+          <p className="font-bold uppercase">© {new Date().getFullYear()} CARTAGENES JR. - PORTAL DE NOTÍCIAS E EDUCAÇÃO</p>
+          <p className="my-4 uppercase">
+            <Link to="/sobre" className="text-[#888] no-underline">SOBRE NÓS</Link> |{' '}
+            <Link to="/legal#privacy" className="text-[#888] no-underline">PRIVACIDADE</Link> |{' '}
+            <Link to="/legal#terms" className="text-[#888] no-underline">TERMOS DE USO</Link>
+          </p>
+          <p className="text-[#555] leading-relaxed uppercase">
+            DISCLAIMER: ESTE PORTAL É ESTRITAMENTE INFORMATIVO. NÃO REALIZAMOS RECOMENDAÇÕES DE INVESTIMENTO E NÃO SOMOS CONSULTORIA CERTIFICADA.
+          </p>
         </div>
       </footer>
     </div>
