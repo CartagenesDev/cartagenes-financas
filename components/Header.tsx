@@ -53,9 +53,7 @@ const Header: React.FC = () => {
             to="/"
             className="flex items-center gap-2 group cursor-pointer mr-auto hover:opacity-80 transition-opacity"
           >
-            <div className="bg-emerald-500 p-2 rounded-lg group-hover:bg-amber-500 transition-colors">
-              <TrendingUp className="text-white" size={24} />
-            </div>
+            <img src="/logo.png" alt="Cartagenes" className="h-10 w-10 rounded-lg" />
             <span className="text-2xl font-black tracking-tight text-gray-900">CARTAGENES</span>
           </Link>
 
