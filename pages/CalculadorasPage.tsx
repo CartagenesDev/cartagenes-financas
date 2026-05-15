@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, Calculator } from 'lucide-react';
 import CompoundInterestCalc from '../components/CompoundInterestCalc';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { ADMIN_EMAIL } from '../constants';
 
 const CalculadorasPage: React.FC = () => {
@@ -48,19 +49,7 @@ const CalculadorasPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header com Breadcrumb */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Link to="/" className="flex items-center gap-2 hover:text-amber-500 transition-colors group">
-              <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="font-bold text-gray-700">Voltar para Home</span>
-            </Link>
-            <div className="mx-8 flex-1 h-px bg-gray-200"></div>
-            <h1 className="text-xl font-black text-gray-900 uppercase tracking-wide">Calculadoras Financeiras</h1>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
@@ -95,7 +84,7 @@ const CalculadorasPage: React.FC = () => {
 
                     <div className="max-w-3xl mx-auto px-6 mt-8 space-y-8">
                         <div>
-                            <h2 className="text-2xl font-black text-red-700 mb-6">Como Dominar os Juros Compostos</h2>
+                            <h2 className="text-2xl font-black text-gray-900 mb-6">Como Dominar os Juros Compostos</h2>
                             <p className="text-gray-600 leading-relaxed">
                                 Planejar seu futuro financeiro não precisa ser complicado. Nossa ferramenta é 100% gratuita e livre de anúncios.
                             </p>
@@ -207,7 +196,9 @@ const CalculadorasPage: React.FC = () => {
             <div className="lg:col-span-1 space-y-6">
                 
                 {/* Card Secundário: Newsletter */}
-                <div className="bg-gray-100 rounded-2xl p-6 border border-gray-200 sticky top-24">\n                     <h4 className="font-bold text-gray-900 mb-2">Receba novidades</h4>\n                     <p className="text-gray-500 text-xs mb-4">Conte\u00fado educativo e an\u00e1lises de mercado direto no seu e-mail.</p>
+                <div className="bg-gray-100 rounded-2xl p-6 border border-gray-200 sticky top-24">
+                     <h4 className="font-bold text-gray-900 mb-2">Receba novidades</h4>
+                     <p className="text-gray-500 text-xs mb-4">Conte\u00fado educativo e an\u00e1lises de mercado direto no seu e-mail.</p>
                      <form onSubmit={handleNewsletterSubmit} className="space-y-2">
                         <input
                           type="email"
@@ -238,20 +229,7 @@ const CalculadorasPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer Standard */}
-      <footer className="bg-[#111] text-[#888] py-10 px-5 text-center text-[12px] border-t border-[#333]">
-        <div className="max-w-[1000px] mx-auto">
-          <p className="font-bold uppercase">© {new Date().getFullYear()} CARTAGENES JR. - PORTAL DE NOTÍCIAS E EDUCAÇÃO</p>
-          <p className="my-4 uppercase">
-            <a href="/sobre.html" className="text-[#888] no-underline">SOBRE NÓS</a> |{' '}
-            <Link to="/legal#privacy" className="text-[#888] no-underline">PRIVACIDADE</Link> |{' '}
-            <Link to="/legal#terms" className="text-[#888] no-underline">TERMOS DE USO</Link>
-          </p>
-          <p className="text-[#555] leading-relaxed uppercase">
-            O SITE CARTAGENES JR. É UM PORTAL EDUCATIVO E INFORMATIVO. NÃO REALIZAMOS RECOMENDAÇÕES DE INVESTIMENTO.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -9,7 +9,7 @@ export const getAITip = async () => {
   try {
     // Using ai.models.generateContent directly with model name and prompt.
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: "Gere uma frase curta e motivadora (em português) sobre investimentos, finanças pessoais ou equilíbrio entre saúde e dinheiro para um site de notícias. Máximo 15 palavras.",
       config: {
         temperature: 0.8,

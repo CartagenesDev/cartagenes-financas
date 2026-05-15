@@ -1,234 +1,240 @@
-import React, { useState, useEffect } from 'react';
-import { LayoutGrid, TrendingUp, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
-interface RankingItem {
+interface StockRank {
   symbol: string;
-  value: string | number;
+  changePercent: number;
+  close: number;
 }
 
+// ─── Universo de ações monitorado para o ranking ─────────────────────────────
+// Plano gratuito da brapi.dev: 1 símbolo por requisição.
+// 30 ações cobrindo os principais setores da B3.
+const RANKING_SYMBOLS = [
+  // Bancos
+  'ITUB4', 'BBDC4', 'BBAS3', 'SANB11', 'BPAC11',
+  // Petróleo, energia e química
+  'PETR4', 'PRIO3', 'CSAN3', 'RECV3', 'BRKM5',
+  // Mineração e siderurgia
+  'VALE3', 'CSNA3', 'GGBR4', 'USIM5',
+  // Varejo
+  'MGLU3', 'LREN3', 'VIVA3', 'AMER3',
+  // Saúde
+  'HAPV3', 'RDOR3', 'FLRY3',
+  // Energia elétrica
+  'ELET3', 'CMIG4', 'ENGI11', 'EQTL3',
+  // Indústria e tecnologia
+  'WEGE3', 'TOTVS3', 'EMBR3',
+  // Alimentos e bebidas
+  'ABEV3', 'JBSS3', 'BEEF3',
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
+const INTERVAL_MS = 15 * 60 * 1_000; // 15 minutos
+
 const RankingsLive: React.FC = () => {
-  const [rankingPL, setRankingPL] = useState<RankingItem[]>([]);
-  const [rankingDY, setRankingDY] = useState<RankingItem[]>([]);
+  const [topAltas, setTopAltas] = useState<StockRank[]>([]);
+  const [topQuedas, setTopQuedas] = useState<StockRank[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [error, setError] = useState(false);
 
-  // Ações populares da B3
-  const symbols = ['PETR4', 'VALE3', 'ITUB4', 'BBDC4', 'ABEV3', 'CSNA3', 'BBAS3', 'PRIO3', 'WEGE3', 'CCRO3'];
+  const fetchRankings = useCallback(async () => {
+    setLoading(true);
+    setError(false);
 
-  // Função para buscar e processar dados
-  const fetchRankings = async () => {
     try {
-      setLoading(true);
+      const BATCH = 5;
+      const all: StockRank[] = [];
 
-      // Verificar cache no localStorage
-      const cachedData = localStorage.getItem('rankingsData');
-      const cachedTime = localStorage.getItem('rankingsTime');
-      const now = Date.now();
+      for (let i = 0; i < RANKING_SYMBOLS.length; i += BATCH) {
+        const batch = RANKING_SYMBOLS.slice(i, i + BATCH);
+        const fetches = batch.map(async (symbol) => {
+          try {
+            const res = await fetch(
+              `https://brapi.dev/api/quote/${symbol}?fundamental=false&token=fvo9MozNACBC67ST67hXBD`
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (!data.results?.length) return null;
+            const s = data.results[0];
+            const close = Number(s.regularMarketPrice) || 0;
+            if (close <= 0) return null;
+            // usa o campo direto da API, sem recalcular manualmente
+            const changePercent = Number(s.regularMarketChangePercent) || 0;
+            return { symbol: s.symbol || symbol, changePercent, close } as StockRank;
+          } catch {
+            return null;
+          }
+        });
 
-      // Se houver cache e não passou 24 horas, usar o cache
-      if (cachedData && cachedTime) {
-        const timeDiff = now - parseInt(cachedTime);
-        const oneDayMs = 24 * 60 * 60 * 1000;
-
-        if (timeDiff < oneDayMs) {
-          const parsed = JSON.parse(cachedData);
-          setRankingPL(parsed.pl);
-          setRankingDY(parsed.dy);
-          setLastUpdate(new Date(parseInt(cachedTime)).toLocaleDateString('pt-BR'));
-          setLoading(false);
-          return;
-        }
+        const results = await Promise.all(fetches);
+        results.forEach((r) => r && all.push(r));
       }
 
-      // Se não houver cache válido, buscar da API
-      const stocksData: any[] = [];
-
-      for (const symbol of symbols) {
-        try {
-          const response = await fetch(`https://brapi.dev/api/quote/${symbol}?fundamental=true`);
-          
-          if (!response.ok) {
-            console.error(`HTTP ${response.status} para ${symbol}`);
-            continue;
-          }
-          
-          const data = await response.json();
-
-          if (data.results && data.results.length > 0) {
-            const stock = data.results[0];
-            const close = Number(stock.regularMarketPrice) || Number(stock.close) || 0;
-            const previousClose = Number(stock.regularMarketPreviousClose) || Number(stock.previousClose) || close;
-            const change = close - previousClose;
-            const peRatio = Number(stock.priceEarnings) || 0;
-            
-            // Dividend yield não está disponível na API Brapi, usar fallback
-            const dividendYield = 0;
-            
-            if (close > 0 && peRatio > 0) {
-              console.log(`${symbol}: PE=${peRatio}`);
-              stocksData.push({
-                symbol: stock.symbol || symbol,
-                change: change,
-                peRatio: peRatio,
-                dividendYield: dividendYield,
-                lastPrice: close
-              });
-            }
-          }
-        } catch (err) {
-          console.error(`Erro ao buscar ${symbol}:`, err);
-        }
+      if (all.length === 0) {
+        setError(true);
+        return;
       }
 
-      // Ranking de P/L (menores primeiro = melhores)
-      const sorted_pl = stocksData
-        .filter(s => s.peRatio > 0 && s.peRatio < 100) // Filtrar P/L válidos
-        .sort((a, b) => a.peRatio - b.peRatio)
-        .slice(0, 5)
-        .map(stock => ({
-          symbol: stock.symbol,
-          value: `${stock.peRatio.toFixed(1)}x`
-        }));
+      const altas = all
+        .filter((s) => s.changePercent > 0)
+        .sort((a, b) => b.changePercent - a.changePercent)
+        .slice(0, 5);
 
-      // Se não tiver dados suficientes de P/L, usar dados estáticos como fallback
-      const fallbackPL: RankingItem[] = [
-        { symbol: 'BBAS3', value: '4.2x' },
-        { symbol: 'PETR4', value: '4.8x' },
-        { symbol: 'VALE3', value: '5.5x' },
-        { symbol: 'CSNA3', value: '6.1x' },
-        { symbol: 'PRIO3', value: '7.2x' }
-      ];
+      const quedas = all
+        .filter((s) => s.changePercent < 0)
+        .sort((a, b) => a.changePercent - b.changePercent)
+        .slice(0, 5);
 
-      // Ranking de Dividend Yield
-      const sorted_dy = stocksData
-        .filter(s => s.dividendYield > 0)
-        .sort((a, b) => b.dividendYield - a.dividendYield)
-        .slice(0, 5)
-        .map(stock => ({
-          symbol: stock.symbol,
-          value: `${stock.dividendYield.toFixed(1)}%`
-        }));
-
-      // Se não tiver dados suficientes de DY, usar dados estáticos como fallback
-      const fallbackDY: RankingItem[] = [
-        { symbol: 'PETR4', value: '14.5%' },
-        { symbol: 'BBAS3', value: '10.2%' },
-        { symbol: 'VALE3', value: '8.8%' },
-        { symbol: 'CSNA3', value: '7.5%' },
-        { symbol: 'ITUB4', value: '6.2%' }
-      ];
-
-      // Como a API não retorna dividendYield, sempre usar dados estáticos para DY
-      setRankingPL(sorted_pl.length >= 3 ? sorted_pl : fallbackPL);
-      setRankingDY(fallbackDY);
-
-      // Cachear os dados
-      const cacheData = {
-        pl: sorted_pl.length >= 3 ? sorted_pl : fallbackPL,
-        dy: sorted_dy.length >= 3 ? sorted_dy : fallbackDY
-      };
-      localStorage.setItem('rankingsData', JSON.stringify(cacheData));
-      localStorage.setItem('rankingsTime', now.toString());
-
-      setLastUpdate(new Date().toLocaleDateString('pt-BR'));
-      setLoading(false);
-    } catch (err) {
-      console.error('Erro ao buscar rankings:', err);
+      setTopAltas(altas);
+      setTopQuedas(quedas);
+      setLastUpdate(new Date());
+    } catch {
+      setError(true);
+    } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Buscar ao montar e a cada 24h
   useEffect(() => {
     fetchRankings();
-
-    // Atualizar a cada 24 horas
-    const interval = setInterval(() => {
-      fetchRankings();
-    }, 24 * 60 * 60 * 1000);
-
+    const interval = setInterval(fetchRankings, INTERVAL_MS);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchRankings]);
+
+  const timeAgo = () => {
+    if (!lastUpdate) return '';
+    const s = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
+    if (s < 60) return `há ${s}s`;
+    return `há ${Math.floor(s / 60)}m`;
+  };
+
+  const fmt = (v: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+    }).format(v);
+
+  const RankingList = ({
+    items,
+    type,
+  }: {
+    items: StockRank[];
+    type: 'alta' | 'queda';
+  }) => {
+    const isAlta = type === 'alta';
+
+    if (loading) {
+      return (
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-9 bg-gray-100 rounded-lg animate-pulse" />
+          ))}
+        </div>
+      );
+    }
+
+    if (error || items.length === 0) {
+      return (
+        <p className="text-xs text-gray-400 text-center py-3">
+          Dados indisponíveis no momento.
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-1.5">
+        {items.map((stock, idx) => (
+          <div
+            key={stock.symbol}
+            className={`flex items-center justify-between px-3 py-2 rounded-xl border transition-colors ${
+              isAlta
+                ? 'bg-emerald-50 border-emerald-100 hover:bg-emerald-100'
+                : 'bg-red-50 border-red-100 hover:bg-red-100'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-[10px] font-black w-4 text-center ${
+                  isAlta ? 'text-emerald-600' : 'text-red-600'
+                }`}
+              >
+                {idx + 1}
+              </span>
+              <div>
+                <p className="text-sm font-black text-gray-900">{stock.symbol}</p>
+                <p className="text-[10px] text-gray-500">{fmt(stock.close)}</p>
+              </div>
+            </div>
+
+            <div
+              className={`flex items-center gap-1 font-black text-sm ${
+                isAlta ? 'text-emerald-600' : 'text-red-600'
+              }`}
+            >
+              {isAlta ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+              {isAlta ? '+' : ''}
+              {stock.changePercent.toFixed(2)}%
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-          _RANKINGS (TEMPO REAL)
-        </h3>
+        <div>
+          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+            Rankings B3
+          </h3>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            {loading
+              ? 'Atualizando...'
+              : lastUpdate
+              ? `Atualizado ${timeAgo()}`
+              : '—'}
+          </p>
+        </div>
         <button
           onClick={fetchRankings}
           disabled={loading}
-          className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-          title="Atualizar agora"
+          className="text-gray-400 hover:text-gray-700 transition-colors disabled:opacity-40"
+          title="Atualizar rankings"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>
 
-      <div className="space-y-8">
-        {/* TOP 5 P/L */}
+      <div className="space-y-6">
         <div>
-          <h4 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-4">
-            <LayoutGrid size={16} className="text-amber-500" /> TOP 5 - MENORES P/L
+          <h4 className="flex items-center gap-2 text-sm font-black text-gray-800 mb-3">
+            <div className="bg-emerald-100 p-1 rounded-lg">
+              <TrendingUp size={14} className="text-emerald-600" />
+            </div>
+            TOP 5 — MAIORES ALTAS
           </h4>
-          <div className="space-y-3">
-            {loading ? (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                <RefreshCw size={14} className="animate-spin mx-auto mb-2" />
-                Carregando...
-              </div>
-            ) : rankingPL.length > 0 ? (
-              rankingPL.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition-colors cursor-pointer">
-                  <span className="font-bold text-gray-700">{item.symbol}</span>
-                  <span className="text-gray-900 font-black">{item.value}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                Dados não disponíveis
-              </div>
-            )}
-          </div>
+          <RankingList items={topAltas} type="alta" />
         </div>
 
-        {/* TOP 5 DY */}
+        <div className="border-t border-gray-100" />
+
         <div>
-          <h4 className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-4">
-            <TrendingUp size={16} className="text-emerald-500" /> TOP 5 - DIVIDEND YIELD
+          <h4 className="flex items-center gap-2 text-sm font-black text-gray-800 mb-3">
+            <div className="bg-red-100 p-1 rounded-lg">
+              <TrendingDown size={14} className="text-red-600" />
+            </div>
+            TOP 5 — MAIORES QUEDAS
           </h4>
-          <div className="space-y-3">
-            {loading ? (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                <RefreshCw size={14} className="animate-spin mx-auto mb-2" />
-                Carregando...
-              </div>
-            ) : rankingDY.length > 0 ? (
-              rankingDY.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition-colors cursor-pointer">
-                  <span className="font-bold text-gray-700">{item.symbol}</span>
-                  <span className="text-emerald-600 font-black">{item.value}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                Dados não disponíveis
-              </div>
-            )}
-          </div>
+          <RankingList items={topQuedas} type="queda" />
         </div>
       </div>
 
-      {/* Nota de atualização */}
-      <div className="text-[10px] text-gray-500 mt-6 border-t border-gray-100 pt-4 text-center">
-        {lastUpdate && (
-          <>
-            ✓ Atualizado em {lastUpdate}
-            <br />
-          </>
-        )}
-        Dados reais da B3 | Atualiza 1x por dia
+      <div className="text-[9px] text-gray-400 mt-5 border-t border-gray-100 pt-4 text-center leading-relaxed">
+        {RANKING_SYMBOLS.length} ações monitoradas · Atualiza a cada 15min · Apenas informativo
       </div>
     </div>
   );

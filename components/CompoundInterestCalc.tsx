@@ -1,16 +1,16 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Calculator, Calendar, TrendingUp, ArrowUpRight, Trash2 } from 'lucide-react';
+import { Calculator, Calendar, TrendingUp, Trash2 } from 'lucide-react';
 import { Chart, registerables } from 'chart.js';
 
 // Registrar componentes necessários do Chart.js
 Chart.register(...registerables);
 
 const CompoundInterestCalc: React.FC = () => {
-  const [initial, setInitial] = useState<number>(0);
-  const [monthly, setMonthly] = useState<number>(0);
-  const [rate, setRate] = useState<number>(0); 
-  const [period, setPeriod] = useState<number>(0); 
+  const [initial, setInitial] = useState<number>(1000);
+  const [monthly, setMonthly] = useState<number>(500);
+  const [rate, setRate] = useState<number>(10);
+  const [period, setPeriod] = useState<number>(10);
   const [periodType, setPeriodType] = useState<'years' | 'months'>('years');
   const [result, setResult] = useState<{total: number, invested: number, interest: number} | null>(null);
   const [tableData, setTableData] = useState<Array<{month: number, interestEarned: number, totalInvested: number, totalInterest: number, totalaccumulated: number}>>([]);
@@ -28,6 +28,7 @@ const CompoundInterestCalc: React.FC = () => {
   };
 
   const calculate = useCallback(() => {
+    if (period === 0) return;
     const totalMonths = periodType === 'years' ? period * 12 : period;
     const monthlyRate = Math.pow(1 + rate / 100, 1 / 12) - 1; // Conversão de taxa anual para mensal real
     
@@ -250,19 +251,12 @@ const CompoundInterestCalc: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={calculate}
-              className="flex-1 bg-black hover:bg-amber-500 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/10 group"
-            >
-              Calcular <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
+          <div className="flex justify-end">
             <button
               onClick={handleClear}
-              title="Limpar campos"
-              className="bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 font-bold px-4 rounded-xl transition-all flex items-center justify-center"
+              className="flex items-center gap-2 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 font-bold px-4 py-2.5 rounded-xl transition-all text-sm"
             >
-              <Trash2 size={18} />
+              <Trash2 size={15} /> Limpar
             </button>
           </div>
           
@@ -300,7 +294,7 @@ const CompoundInterestCalc: React.FC = () => {
       
       {tableData.length > 0 && (
         <div className="mt-8 border-t border-gray-100 pt-8">
-          <h4 className="text-lg font-bold text-red-700 mb-4 text-center">Tabela:</h4>
+          <h4 className="text-lg font-bold text-gray-900 mb-4">Evolução mês a mês</h4>
           <div className="overflow-x-auto overflow-y-auto max-h-[450px] rounded-lg border border-gray-100 shadow-inner">
             <table className="w-full text-sm relative">
               <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { RefreshCw, TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StockData {
   symbol: string;
@@ -10,275 +10,214 @@ interface StockData {
   volume: number;
 }
 
+// ─── Adicione ou remova ações aqui para personalizar o ticker ──────────────
+const TICKER_SYMBOLS = [
+  // Bancos
+  'ITUB4', 'BBDC4', 'BBAS3', 'SANB11',
+  // Petróleo e energia
+  'PETR4', 'PRIO3', 'CSAN3', 'RECV3',
+  // Mineração e siderurgia
+  'VALE3', 'CSNA3', 'GGBR4', 'USIM5',
+  // Varejo
+  'MGLU3', 'LREN3', 'VIVA3',
+  // Saúde
+  'HAPV3', 'RDOR3',
+  // Utilidades e energia elétrica
+  'ELET3', 'CMIG4', 'ENGI11',
+  // Indústria e tecnologia
+  'WEGE3', 'TOTVS3', 'EMBR3',
+  // Alimentos e bebidas
+  'ABEV3', 'JBSS3',
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
 const StockTickerLive: React.FC = () => {
   const [stocks, setStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Ações B3 para monitorar
-  const symbols = ['PETR4', 'VALE3', 'ITUB4', 'ABEV3', 'BBDC4'];
-
-  // Função para buscar dados da API
   const fetchStocks = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const fetchPromises = symbols.map(async (symbol) => {
-        try {
-          const response = await fetch(`https://brapi.dev/api/quote/${symbol}?fundamental=false`);
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          
-          const data = await response.json();
+      const BATCH = 5;
+      const results: StockData[] = [];
 
-          if (data.results && data.results.length > 0) {
-            const stock = data.results[0];
-            const close = Number(stock.regularMarketPrice) || Number(stock.close) || 0;
-            const previousClose = Number(stock.regularMarketPreviousClose) || Number(stock.previousClose) || close;
-            const change = close - previousClose;
-            const changePercent = previousClose > 0 ? ((change / previousClose) * 100) : 0;
-            
+      for (let i = 0; i < TICKER_SYMBOLS.length; i += BATCH) {
+        const batch = TICKER_SYMBOLS.slice(i, i + BATCH);
+        const fetches = batch.map(async (symbol) => {
+          try {
+            const res = await fetch(
+              `https://brapi.dev/api/quote/${symbol}?fundamental=false&token=fvo9MozNACBC67ST67hXBD`
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (!data.results?.length) return null;
+            const s = data.results[0];
+            const close = Number(s.regularMarketPrice) || 0;
+            if (close <= 0) return null;
             return {
-              symbol: stock.symbol || symbol,
-              name: stock.shortName || stock.longName || symbol,
-              close: close,
-              change: change,
-              changePercent: changePercent,
-              volume: parseInt(stock.regularMarketVolume || stock.volume || 0)
-            };
+              symbol: s.symbol || symbol,
+              name: s.shortName || s.longName || symbol,
+              close,
+              change: Number(s.regularMarketChange) || 0,
+              changePercent: Number(s.regularMarketChangePercent) || 0,
+              volume: Number(s.regularMarketVolume) || 0,
+            } as StockData;
+          } catch {
+            return null;
           }
-          return null;
-        } catch (err) {
-          console.error(`Erro ao buscar ${symbol}:`, err);
-          return null;
-        }
-      });
+        });
 
-      const results = await Promise.all(fetchPromises);
-      const validStocks = results.filter(stock => stock !== null) as StockData[];
+        const batchResults = await Promise.all(fetches);
+        batchResults.forEach((r) => r && results.push(r));
+      }
 
-      if (validStocks.length > 0) {
-        setStocks(validStocks);
+      if (results.length > 0) {
+        setStocks(results);
         setLastUpdate(new Date());
       }
-      setLoading(false);
-    } catch (err) {
-      console.error('Erro ao buscar dados de ações:', err);
+    } catch {
       setError('Erro ao carregar dados. Tentando novamente...');
+    } finally {
       setLoading(false);
     }
   };
 
-  // Buscar dados ao montar o componente
   useEffect(() => {
     fetchStocks();
-
-    // Auto-refresh a cada 60 segundos
-    const interval = setInterval(() => {
-      fetchStocks();
-    }, 60000); // 60 segundos
-
+    const interval = setInterval(fetchStocks, 60_000);
     return () => clearInterval(interval);
   }, []);
 
-  // Verificar scroll position
-  const checkScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const fmt = (v: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
 
-  useEffect(() => {
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [stocks]);
+  const fmtVol = (v: number) =>
+    v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(1)}K` : String(v);
 
-  // Funções de scroll
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-      setTimeout(checkScroll, 300);
-    }
-  };
-
-  // Formatar valor em moeda
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
-  };
-
-  // Formatar volume
-  const formatVolume = (volume: number) => {
-    if (volume >= 1000000) {
-      return `${(volume / 1000000).toFixed(1)}M`;
-    } else if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(1)}K`;
-    }
-    return volume.toString();
-  };
-
-  // Calcular tempo desde última atualização
-  const getTimeAgo = () => {
+  const timeAgo = () => {
     if (!lastUpdate) return '';
-    const seconds = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
-    if (seconds < 60) return `há ${seconds}s`;
-    if (seconds < 3600) return `há ${Math.floor(seconds / 60)}m`;
-    return `há ${Math.floor(seconds / 3600)}h`;
+    const s = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
+    if (s < 60) return `há ${s}s`;
+    if (s < 3600) return `há ${Math.floor(s / 60)}m`;
+    return `há ${Math.floor(s / 3600)}h`;
   };
+
+  // Velocidade: cada ação ocupa ~180px, scroll a ~60px/s
+  const duration = Math.max(stocks.length * 3, 40);
 
   return (
-    <div className="w-full bg-gradient-to-r from-gray-900 to-black py-4 sticky top-20 z-30 shadow-lg border-b border-gray-700">
+    <div className="w-full bg-gradient-to-r from-gray-900 to-black py-4 sticky top-20 z-30 shadow-lg border-b border-gray-700 overflow-hidden">
+      <style>{`
+        @keyframes ticker-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-track {
+          animation: ticker-scroll ${duration}s linear infinite;
+          will-change: transform;
+        }
+        .ticker-track:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header com status */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-              Mercado B3 - Tempo Real
+              Mercado B3 — Tempo Real
             </h3>
             <div className="flex items-center gap-2">
               {loading ? (
                 <RefreshCw size={14} className="text-amber-500 animate-spin" />
               ) : (
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               )}
               <span className="text-[10px] text-gray-500 font-medium">
-                {loading ? 'Atualizando...' : `Atualizado ${getTimeAgo()}`}
+                {loading ? 'Atualizando...' : `Atualizado ${timeAgo()}`}
               </span>
             </div>
           </div>
-          <button
-            onClick={fetchStocks}
-            disabled={loading}
-            className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
-            title="Atualizar agora"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-gray-600 font-medium hidden sm:block">
+              {stocks.length} ações monitoradas
+            </span>
+            <button
+              onClick={fetchStocks}
+              disabled={loading}
+              className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              title="Atualizar agora"
+            >
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
-        {/* Erro message */}
         {error && (
           <div className="bg-red-900/20 border border-red-500/30 text-red-300 text-xs px-3 py-2 rounded mb-3">
             {error}
           </div>
         )}
 
-        {/* Ticker com scroll */}
         {stocks.length > 0 ? (
-          <div className="relative flex items-center gap-2">
-            {/* Botão esquerdo */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-r from-gray-900 to-transparent p-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-            )}
+          /* Faixas laterais para suavizar entrada/saída */
+          <div className="relative">
+            <div className="absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-            {/* Container de scroll */}
-            <div
-              ref={scrollContainerRef}
-              onScroll={checkScroll}
-              className="flex-1 overflow-x-auto scroll-smooth"
-              style={{ scrollBehavior: 'smooth' }}
-            >
-              <div className="flex gap-6 pb-2 px-2">
-                {stocks.map(stock => (
+            <div className="overflow-hidden">
+              {/* Duplica as ações para loop contínuo */}
+              <div className="ticker-track flex gap-4 w-max">
+                {[...stocks, ...stocks].map((stock, i) => (
                   <div
-                    key={stock.symbol}
-                    className="flex items-center gap-4 bg-gray-800/30 px-4 py-2 rounded-lg hover:bg-gray-800/50 transition-colors cursor-pointer flex-shrink-0"
+                    key={`${stock.symbol}-${i}`}
+                    className="flex items-center gap-3 bg-gray-800/40 px-4 py-2.5 rounded-xl flex-shrink-0 border border-gray-700/30 cursor-default"
                   >
-                    {/* Símbolo e Nome */}
                     <div>
-                      <p className="text-sm font-black text-white hover:text-amber-500 transition-colors">
-                        {stock.symbol}
-                      </p>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                      <p className="text-sm font-black text-white">{stock.symbol}</p>
+                      <p className="text-[9px] text-gray-500 uppercase tracking-widest truncate max-w-[80px]">
                         {stock.name}
                       </p>
                     </div>
 
-                    {/* Divisor */}
-                    <div className="w-px h-8 bg-gray-700"></div>
+                    <div className="w-px h-8 bg-gray-700" />
 
-                    {/* Preço */}
-                    <div>
-                      <p className="text-sm font-bold text-white">
-                        {formatCurrency(stock.close)}
-                      </p>
-                    </div>
+                    <p className="text-sm font-bold text-white">{fmt(stock.close)}</p>
 
-                    {/* Variação */}
                     <div
-                      className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold ${
                         stock.change >= 0
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-red-500/20 text-red-400'
                       }`}
                     >
-                      {stock.change >= 0 ? (
-                        <TrendingUp size={14} />
-                      ) : (
-                        <TrendingDown size={14} />
-                      )}
-                      <span className="text-sm font-bold">
-                        {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} (
-                        {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                      </span>
+                      {stock.change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                      {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
                     </div>
 
-                    {/* Volume (opcional, hidden em mobile) */}
-                    <div className="hidden md:block text-right">
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest">
-                        Vol
-                      </p>
-                      <p className="text-xs font-semibold text-gray-300">
-                        {formatVolume(stock.volume)}
-                      </p>
+                    <div className="hidden lg:block text-right">
+                      <p className="text-[9px] text-gray-600 uppercase tracking-widest">Vol</p>
+                      <p className="text-xs font-semibold text-gray-400">{fmtVol(stock.volume)}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Botão direito */}
-            {canScrollRight && (
-              <button
-                onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gradient-to-l from-gray-900 to-transparent p-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <ChevronRight size={20} />
-              </button>
-            )}
           </div>
         ) : !loading && (
-          <div className="text-center py-4 text-gray-400 text-sm">
-            {error ? 'Não foi possível carregar os dados. Tentando novamente...' : 'Carregando dados de mercado...'}
+          <div className="text-center py-4 text-gray-500 text-sm">
+            {error || 'Carregando dados de mercado...'}
           </div>
         )}
 
-        {/* Nota de disclaimer */}
-        <div className="text-[10px] text-gray-500 mt-3 border-t border-gray-700 pt-3">
-          ℹ️ Dados da B3 com atualização a cada 60 segundos. Utilizado para fins informativos apenas.
+        <div className="text-[10px] text-gray-600 mt-3 border-t border-gray-800 pt-3 flex items-center justify-between">
+          <span>Dados da B3 com atualização a cada 60 segundos. Apenas informativos.</span>
+          <span className="text-gray-700">brapi.dev</span>
         </div>
       </div>
     </div>

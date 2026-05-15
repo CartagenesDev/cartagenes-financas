@@ -22,14 +22,24 @@ export interface NewsArticle {
   category: 'Finanças' | 'Economia' | 'Empresas' | 'Bem-estar';
   author: string;
   source: string;
-  date: string; // humanized string (UI)
-  publishedAt?: string; // ISO timestamp for sorting/filtering
-  readingTime: number; // minutes
+  date: string;
+  publishedAt?: string;
+  readingTime: number;
   imageUrl: string;
   imageAlt?: string;
   slug?: string;
   tags?: string[];
   isTrending: boolean;
+  content?: string[];
+  keyPoints?: string[];
+}
+
+export interface UserData {
+  name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  memberSince: string;
 }
 
 export interface RankingItem {
