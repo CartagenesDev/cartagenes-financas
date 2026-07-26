@@ -51,9 +51,7 @@ const RankingsLive: React.FC = () => {
         const batch = RANKING_SYMBOLS.slice(i, i + BATCH);
         const fetches = batch.map(async (symbol) => {
           try {
-            const res = await fetch(
-              `https://brapi.dev/api/quote/${symbol}?fundamental=false&token=fvo9MozNACBC67ST67hXBD`
-            );
+            const res = await fetch(`/api/quote?symbol=${symbol}`);
             if (!res.ok) return null;
             const data = await res.json();
             if (!data.results?.length) return null;
