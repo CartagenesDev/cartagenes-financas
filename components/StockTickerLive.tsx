@@ -25,7 +25,7 @@ const TICKER_SYMBOLS = [
   // Utilidades e energia elétrica
   'ELET3', 'CMIG4', 'ENGI11',
   // Indústria e tecnologia
-  'WEGE3', 'TOTVS3', 'EMBR3',
+  'WEGE3', 'TOTS3', 'EMBR3',
   // Alimentos e bebidas
   'ABEV3', 'JBSS3',
 ];
