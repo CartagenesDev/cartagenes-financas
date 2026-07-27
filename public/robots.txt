@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /perfil
+Disallow: /investimentos
+Disallow: /login
+
+Sitemap: https://www.cartagenesjr.com.br/sitemap.xml
