@@ -198,7 +198,7 @@ const CalculadorasPage: React.FC = () => {
                 {/* Card Secundário: Newsletter */}
                 <div className="bg-gray-100 rounded-2xl p-6 border border-gray-200 sticky top-24">
                      <h4 className="font-bold text-gray-900 mb-2">Receba novidades</h4>
-                     <p className="text-gray-500 text-xs mb-4">Conte\u00fado educativo e an\u00e1lises de mercado direto no seu e-mail.</p>
+                     <p className="text-gray-500 text-xs mb-4">Conteúdo educativo e análises de mercado direto no seu e-mail.</p>
                      <form onSubmit={handleNewsletterSubmit} className="space-y-2">
                         <input
                           type="email"
