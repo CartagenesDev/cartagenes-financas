@@ -28,7 +28,7 @@ const FEEDS = [
     category: 'Bem-estar' as const,
     label: 'Bem-estar',
     badgeClass: 'bg-emerald-100 text-emerald-700',
-    url: 'https://news.google.com/rss/search?q=saude+bem+estar+qualidade+vida+longevidade+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419',
+    url: 'https://news.google.com/rss/search?q=saude+bem+estar+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419',
   },
 ];
 

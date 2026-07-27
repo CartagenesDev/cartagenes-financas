@@ -22,7 +22,7 @@ const FEEDS = [
   },
   {
     category: 'Bem-estar' as const,
-    url: 'https://news.google.com/rss/search?q=saude+bem+estar+qualidade+vida+longevidade+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419',
+    url: 'https://news.google.com/rss/search?q=saude+bem+estar+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419',
   },
 ];
 
